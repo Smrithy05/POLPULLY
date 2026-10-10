@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#F7F8F6">
+  <meta name="description" content="Official WebGIS Portal for Polpully Grama Panchayath. Developed at Sree Sankaracharya University of Sanskrit.">
+  <title>Polpully Spatial | Modern WebGIS</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  
+  <!-- Google Fonts: Outfit (Headings) & Inter (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* --- MODERN & ENGAGING DESIGN SYSTEM --- */
+    :root {
+      --bg-main: #F7F8F6;
+      --bg-surface: #FFFFFF;
+      --text-main: #1A2421;
+      --text-muted: #5C6E64;
+      --accent-primary: #22573A; /* Deep Forest Green */
+      --accent-hover: #163B27;
+      --accent-light: #E3EDE7;
+      --accent-warm: #E27B42; /* Warm Terracotta Accent */
+      --border: #DDE5E0;
+      --radius-lg: 24px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow-soft: 0 8px 32px rgba(34, 87, 58, 0.08);
+      --shadow-hover: 0 12px 40px rgba(34, 87, 58, 0.15);
+      --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text-main);
+      background: var(--bg-main);
+      background-image: radial-gradient(circle at top right, rgba(227, 237, 231, 0.5) 0%, transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(226, 123, 66, 0.05) 0%, transparent 40%);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+    a { text-decoration: none; color: inherit; transition: var(--transition); }
+    img { max-width: 100%; display: block; border-radius: inherit; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    
+    .eyebrow {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--accent-warm);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    /* --- ANIMATIONS --- */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-up { animation: fadeUp 1s ease forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.2s; }
+    .delay-2 { animation-delay: 0.4s; }
+
+    /* --- HEADER --- */
+    header {
+      background: rgba(247, 248, 246, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(221, 229, 224, 0.5);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .header-inner { display: flex; justify-content: space-between; align-items: center; height: 90px; }
+    .university-brand { display: flex; align-items: center; gap: 16px; }
+    
+    .logo-placeholder {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 700; font-family: 'Outfit'; font-size: 1.2rem;
+      box-shadow: 0 4px 12px rgba(34, 87, 58, 0.2);
+    }
+
+    .university-text h1 { font-size: 1rem; font-weight: 600; letter-spacing: 0.5px; }
+    .university-text p { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+
+    nav { display: flex; gap: 40px; font-size: 0.95rem; font-weight: 500; }
+    nav a { position: relative; color: var(--text-muted); }
+    nav a:hover { color: var(--accent-primary); }
+    nav a::after {
+      content: ''; position: absolute; width: 0; height: 2px;
+      bottom: -6px; left: 0; background-color: var(--accent-primary);
+      transition: var(--transition);
+    }
+    nav a:hover::after { width: 100%; }
+
+    /* --- HERO SECTION --- */
+    .hero { padding: 120px 0 80px; text-align: center; position: relative; }
+    .hero h2 {
+      font-size: clamp(3rem, 6vw, 5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      color: var(--text-main);
+      letter-spacing: -1.5px;
+    }
+    .hero h2 span { color: var(--accent-primary); }
+    
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 48px;
+    }
+
+    .btn-group { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .btn {
+      padding: 16px 36px;
+      border-radius: 100px;
+      font-size: 1rem; font-weight: 600; font-family: 'Outfit', sans-serif;
+      cursor: pointer; transition: var(--transition);
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary {
+      background: var(--accent-primary); color: white;
+      box-shadow: 0 8px 24px rgba(34, 87, 58, 0.25);
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(34, 87, 58, 0.3);
+    }
+    .btn-outline {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      box-shadow: var(--shadow-soft);
+    }
+    .btn-outline:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      transform: translateY(-3px);
+    }
+
+    /* --- ABOUT SECTION --- */
+    .about-section { padding: 80px 0 120px; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    
+    .about-text h3 { font-size: 2.5rem; font-weight: 600; margin-bottom: 24px; line-height: 1.2; }
+    .about-text p { color: var(--text-muted); margin-bottom: 20px; font-size: 1.1rem; }
+
+    .image-card {
+      width: 100%; aspect-ratio: 4/3;
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+      transform: rotate(2deg);
+      transition: var(--transition);
+    }
+    .image-card:hover { transform: rotate(0deg) scale(1.02); box-shadow: var(--shadow-hover); }
+    
+    .lsgd-placeholder {
+      width: 100%; height: 100%;
+      background: var(--accent-light);
+      border-radius: var(--radius-md);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--accent-primary);
+      text-align: center;
+      overflow: hidden;
+      border: 2px dashed rgba(34, 87, 58, 0.2);
+    }
+    .lsgd-placeholder svg { width: 40px; height: 40px; margin-bottom: 16px; opacity: 0.8; }
+
+    /* --- MAP SECTION --- */
+    .map-section { padding: 100px 0; position: relative; }
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-header h3 { font-size: 2.5rem; font-weight: 600; }
+
+    .map-container {
+      display: grid; grid-template-columns: 1fr 340px;
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      min-height: 650px;
+      border: 1px solid var(--border);
+    }
+
+    #map { width: 100%; height: 100%; z-index: 1; background: #e9ecea; }
+
+    .map-sidebar {
+      padding: 40px 32px;
+      background: var(--bg-surface);
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 32px;
+    }
+    .map-sidebar h4 { font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; }
+    
+    .control-group label {
+      display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+      margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .control-group select, .control-group input {
+      width: 100%; padding: 16px; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-family: inherit; font-size: 1rem;
+      background: var(--bg-main); transition: var(--transition); outline: none;
+      color: var(--text-main);
+    }
+    .control-group select:focus, .control-group input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 4px rgba(34, 87, 58, 0.1);
+    }
+    
+    /* Customizing Leaflet Controls */
+    .leaflet-control-zoom a {
+      background: var(--bg-surface) !important;
+      color: var(--accent-primary) !important;
+      border: none !important;
+      box-shadow: var(--shadow-soft) !important;
+    }
+
+    /* --- CREATOR SECTION --- */
+    .creator-section { padding: 100px 0; background: var(--bg-surface); border-top: 1px solid var(--border); }
+    .creator-wrapper {
+      max-width: 700px; margin: 0 auto;
+      text-align: center;
+    }
+
+    .creator-avatar {
+      width: 100px; height: 100px;
+      background: var(--accent-light); color: var(--accent-primary);
+      border-radius: 50%; margin: 0 auto 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; font-weight: 500; font-family: 'Outfit';
+      box-shadow: 0 8px 24px rgba(34, 87, 58, 0.15);
+    }
+
+    .creator-wrapper h4 { font-size: 2rem; font-weight: 600; margin-bottom: 8px; }
+    .creator-wrapper .title { font-size: 1.1rem; color: var(--text-muted); display: block; margin-bottom: 32px; }
+
+    .github-box {
+      background: var(--bg-main); padding: 32px; border-radius: var(--radius-lg);
+      display: flex; justify-content: space-between; align-items: center;
+      text-align: left; border: 1px solid var(--border); transition: var(--transition);
+    }
+    .github-box:hover { box-shadow: var(--shadow-soft); border-color: var(--accent-primary); }
+    .github-box h5 { font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; }
+    .github-box p { font-size: 1rem; color: var(--text-muted); }
+
+    /* --- FOOTER --- */
+    footer { text-align: center; padding: 48px 24px; font-size: 0.9rem; color: var(--text-muted); }
+
+    /* --- RESPONSIVE --- */
+    @media(max-width: 900px) {
+      .about-grid, .map-container { grid-template-columns: 1fr; gap: 48px; }
+      .map-sidebar { border-left: none; border-top: 1px solid var(--border); }
+      .map-container { min-height: 850px; }
+      nav { display: none; }
+      .github-box { flex-direction: column; gap: 24px; text-align: center; }
+      .hero h2 { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="container header-inner">
+      <div class="university-brand">
+        <div class="logo-placeholder" title="SSUS Logo" style="background: transparent; box-shadow: none;">
+  <img src="C:\Users\HP\OneDrive\Desktop\WebGIS\SSUSlogo.jpeg" alt="SSUS Logo" style="width: 100%; height: 100%; object-fit: contain;">
+</div>
+        <div class="university-text">
+          <h1>Sree Sankaracharya University of Sanskrit</h1>
+          <p>Department of Geography</p>
+        </div>
+      </div>
+      <nav>
+        <a href="#about">About Region</a>
+        <a href="#webgis">Spatial Explorer</a>
+        <a href="#project">Project Hub</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="container">
+      <div class="animate-up">
+        <span class="eyebrow">Academic Spatial Project</span>
+        <h2>Mapping <span>Polpully</span></h2>
+        <p>An interactive cartography experience documenting the spatial, administrative, and physical geography of Polpully Grama Panchayath.</p>
+        <div class="btn-group">
+          <a href="#webgis" class="btn btn-primary">
+            Open Explorer
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="#about" class="btn btn-outline">Learn More</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT SECTION -->
+  <section id="about" class="about-section">
+    <div class="container about-grid">
+      <div class="about-text animate-up delay-1">
+        <span class="eyebrow">The Region</span>
+        <h3>Administrative & Agrarian Heritage</h3>
+        <p>Nestled within the Palakkad district of Kerala, Polpully is a serene Grama Panchayath characterized by its sweeping agricultural expanses, undulating terrain, and vibrant rural communities.</p>
+        <p>Serving as a vital administrative unit, the region perfectly balances traditional agrarian livelihoods with evolving local self-governance. Understanding its geography—from land use patterns to settlement distribution—is essential for sustainable local-level planning.</p>
+      </div>
+      <div class="animate-up delay-2">
+        <div class="image-card">
+          <img src="https://lh3.googleusercontent.com/gps-cs-s/ANWiy9T8ZhW6IiiOjAIzSF9SmbC5o-LzrLnjf2WrcZ95IUzHZXx4y9oMbPpUXrSBoptC6U-Ktiw2PjnjJZLWr5SgMmeJKxkrvn3f0YFqbWZ0jshBt_IbWa_hfuVEQ7zAWY3bKKkaLBtEvy8y4x0=s1360-w1360-h1020-rw" alt="Polpully LSGD Office" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAP SECTION -->
+  <section id="webgis" class="map-section">
+    <div class="container">
+      <div class="section-header animate-up">
+        <span class="eyebrow">Interactive Canvas</span>
+        <h3>Spatial Explorer</h3>
+      </div>
+      <div class="map-container animate-up delay-1">
+        <iframe 
+  src="https://smrithy05.github.io/POLPULLY/" 
+  width="100%" 
+  height="100%" 
+  style="border: none; border-radius: 12px; z-index: 1; background: #e9ecea;">
+</iframe>
+        <div class="map-sidebar">
+          <div>
+            <h4>Map Controls</h4>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">Adjust map styles and search for exact coordinates within the region.</p>
+          </div>
+          
+          <div class="control-group">
+            <label for="basemap">Basemap Style</label>
+            <select id="basemap">
+              <option value="street">Minimal Light (Carto)</option>
+              <option value="osm">Standard Street (OSM)</option>
+              <option value="satellite">Satellite Imagery</option>
+            </select>
+          </div>
+          
+          <div class="control-group" style="margin-top: auto;">
+            <label for="search">Locate Area</label>
+            <input type="text" id="search" placeholder="e.g. Polpully Junction...">
+            <button id="searchBtn" class="btn btn-primary" style="width: 100%; margin-top: 16px;">Search Location</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CREATOR SECTION -->
+  <section id="project" class="creator-section">
+    <div class="container">
+      <div class="creator-wrapper animate-up">
+        <div class="creator-avatar">SM</div>
+        <h4>Smrithy</h4>
+        <span class="title">Geography & Spatial Analysis</span>
+        
+        <div class="github-box">
+          <div>
+            <h5>Project Repository</h5>
+            <p>Access the source code, geographical datasets, and documentation.</p>
+          </div>
+          <a href="https://github.com/Smrithy05/POLPULLY" target="_blank" class="btn btn-outline">View on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Polpully WebGIS Project. Developed by Smrithy05.<br>Sree Sankaracharya University of Sanskrit, Kalady.</p>
+    </div>
+  </footer>
+
+  <!-- LEAFLET MAP JAVASCRIPT -->
+  
+    "use strict";
+    
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationPlayState = 'running';
+        }
+      });
+    });
+    
+    document.querySelectorAll('.animate-up').forEach((el) => {
+      el.style.animationPlayState = 'paused';
+      observer.observe(el);
+    });
+
+    const mapConfig = {
+      center: [10.77, 76.68], // Polpully coordinates
+      zoom: 13
+    };
+
+    // Initialize Map
+    const map = L.map("map", { zoomControl: false }).setView(mapConfig.center, mapConfig.zoom);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // Basemaps Collection
+    const basemaps = {
+      street: L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 20, attribution: '&copy; OpenStreetMap &copy; CARTO'
+      }),
+      osm: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19, attribution: '&copy; OpenStreetMap'
+      }),
+      satellite: L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 19, attribution: 'Imagery &copy; Esri'
+      })
+    };
+
+    // Set default layer
+    let currentLayer = basemaps.street;
+    currentLayer.addTo(map);
+
+    // Custom Map Marker styling (Matching the accent color)
+    const customIcon = L.divIcon({
+      className: 'custom-pin',
+      html: '<div style="background:#E27B42;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.3);"></div>',
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+
+    L.marker(mapConfig.center, {icon: customIcon}).addTo(map)
+      .bindPopup("<div style='font-family:Outfit,sans-serif;text-align:center;'><b style='font-size:1.1rem;color:#22573A'>Polpully</b><br><span style='color:#5C6E64;font-size:0.85rem;'>Administrative Center</span></div>");
+
+    // Layer Switcher
+    document.getElementById("basemap").addEventListener("change", function (e) {
+      map.removeLayer(currentLayer);
+      currentLayer = basemaps[e.target.value];
+      currentLayer.addTo(map);
+    });
+
+    // Location Search
+    document.getElementById("searchBtn").addEventListener("click", function () {
+      const query = document.getElementById("search").value.trim();
+      if (!query) return;
+
+      const btn = this;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = "Searching...";
+
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}, Kerala, India&format=jsonv2&limit=1`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          btn.innerHTML = originalText;
+          if (data.length === 0) {
+            alert("Location not found. Try a broader search.");
+            return;
+          }
+          const lat = data[0].lat;
+          const lon = data[0].lon;
+          map.flyTo([lat, lon], 15, { duration: 1.5 });
+
+          setTimeout(() => {
+            L.popup().setLatLng([lat, lon])
+             .setContent(`<div style="font-family:Outfit,sans-serif;"><b>${data[0].name || "Searched Location"}</b></div>`)
+             .openOn(map);
+          }, 1500);
+        })
+        .catch(() => {
+          btn.innerHTML = originalText;
+          alert("Error searching location.");
+        });
+    });
+
+    document.getElementById("search").addEventListener("keypress", function (e) {
+      if (e.key === "Enter") document.getElementById("searchBtn").click();
+    });
+  </script>
+</body>
+</html>
